@@ -39,6 +39,12 @@ from .device_code import (
     refresh_access_token,
     request_device_code,
 )
+from .login_session import (
+    LoginSession,
+    LoginSessionRegistry,
+    LoginStatus,
+    public_view,
+)
 from .service_principal import (
     SERVICE_PRINCIPAL_SCOPE,
     AppOnlyTokenCache,
@@ -68,6 +74,9 @@ __all__ = [
     "DeviceCodeExpiredError",
     "EncryptedFileTokenStore",
     "KeyringTokenStore",
+    "LoginSession",
+    "LoginSessionRegistry",
+    "LoginStatus",
     "NoUsableTokenStoreError",
     "PlainFileTokenStore",
     "RefreshTokenInvalidError",
@@ -76,6 +85,7 @@ __all__ = [
     "acquire_app_only_token",
     "is_real_keyring_backend",
     "poll_for_token",
+    "public_view",
     "refresh_access_token",
     "request_device_code",
 ]
