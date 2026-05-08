@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcp-microsoft-graph-auth"
-version = "0.1.0"
+version = "0.1.1"
 description = "Shared Microsoft Graph auth helpers (Device Code, token cache, BYO client) for MCP servers."
 readme = "README.md"
 requires-python = ">=3.11"

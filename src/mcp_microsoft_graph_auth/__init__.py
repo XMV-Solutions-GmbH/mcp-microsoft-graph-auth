@@ -60,7 +60,7 @@ from .token_store import (
 )
 from .tokens import DEFAULT_REFRESH_BUFFER_SECONDS, CachedToken
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "AUTHORITY_BASE",

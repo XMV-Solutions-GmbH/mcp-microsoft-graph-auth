@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No entries.
 
+## [v0.1.1] — 2026-05-08
+
+### Fixed
+
+- Added `py.typed` marker so consumers using `mypy --strict` see typed imports instead of `Any`. Without this, downstream callers got "Module … missing library stubs or py.typed marker" warnings and lost type-checking on every public symbol. No behaviour change.
+
 ## [v0.1.0] — 2026-05-08
 
 First public release. Five modules extracted / authored, all tests green, public API stable enough for two known consumers (`mcp-server-sharepoint`, `mcp-server-outlook`) to depend on.
