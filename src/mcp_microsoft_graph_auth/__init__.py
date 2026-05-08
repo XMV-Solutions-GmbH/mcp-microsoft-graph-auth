@@ -39,6 +39,11 @@ from .device_code import (
     refresh_access_token,
     request_device_code,
 )
+from .service_principal import (
+    SERVICE_PRINCIPAL_SCOPE,
+    AppOnlyTokenCache,
+    acquire_app_only_token,
+)
 from .token_store import (
     EncryptedFileTokenStore,
     KeyringTokenStore,
@@ -54,6 +59,8 @@ __version__ = "0.0.1.dev0"
 __all__ = [
     "AUTHORITY_BASE",
     "DEFAULT_REFRESH_BUFFER_SECONDS",
+    "SERVICE_PRINCIPAL_SCOPE",
+    "AppOnlyTokenCache",
     "AuthorizationDeniedError",
     "CachedToken",
     "DeviceCodeChallenge",
@@ -66,6 +73,7 @@ __all__ = [
     "RefreshTokenInvalidError",
     "TokenStore",
     "__version__",
+    "acquire_app_only_token",
     "is_real_keyring_backend",
     "poll_for_token",
     "refresh_access_token",
