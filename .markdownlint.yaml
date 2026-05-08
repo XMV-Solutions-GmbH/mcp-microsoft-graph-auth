@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Markdownlint configuration
+# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+
+# Disable line length rule - impractical for documentation with URLs
+MD013: false
+
+# Allow first heading to not be h1 (for templates with frontmatter)
+MD041: false
+
+# Disable table column style rule - we prefer aligned tables for readability
+MD060: false
+
+# Allow duplicate headings under different parents — CHANGELOG.md
+# legitimately has "Added", "Changed", etc. under each version section.
+MD024:
+    siblings_only: true

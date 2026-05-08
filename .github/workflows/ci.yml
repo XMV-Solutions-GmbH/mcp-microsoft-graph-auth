@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v23
+        with:
+          globs: |
+            **/*.md
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install package + dev dependencies
+        run: uv sync --extra dev
+
+      - name: ruff check
+        run: uv run ruff check src tests
+
+      - name: ruff format check
+        run: uv run ruff format --check src tests
+
+      - name: mypy
+        run: uv run mypy src/mcp_microsoft_graph_auth tests
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install package + dev dependencies
+        run: uv sync --extra dev
+
+      - name: Run unit + integration tests with coverage
+        run: ./tests/run_tests.sh
+
+      - name: Upload coverage to Codecov
+        if: ${{ hashFiles('coverage.xml') != '' }}
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+          verbose: false
+
+  harness:
+    runs-on: ubuntu-latest
+    needs: test
+    # Harness tests authenticate against a real Microsoft Identity tenant
+    # via a refresh token stored in MCP_GRAPH_AUTH_HARNESS_TOKEN_JSON.
+    # Skip silently when the secret isn't available so external
+    # contributions on forks aren't blocked on something they can't provide.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install package + dev dependencies
+        run: uv sync --extra dev
+
+      - name: Restore harness token cache from secret
+        env:
+          TOKEN_B64: ${{ secrets.MCP_GRAPH_AUTH_HARNESS_TOKEN_JSON }}
+        run: |
+          if [ -z "$TOKEN_B64" ]; then
+            echo "::warning::MCP_GRAPH_AUTH_HARNESS_TOKEN_JSON not set — harness tests will be skipped."
+            exit 0
+          fi
+          mkdir -p ~/.cache/mcp-microsoft-graph-auth/harness
+          printf '%s' "$TOKEN_B64" | base64 -d > ~/.cache/mcp-microsoft-graph-auth/harness/token.json
+          chmod 600 ~/.cache/mcp-microsoft-graph-auth/harness/token.json
+          echo "Harness token cache restored ($(wc -c < ~/.cache/mcp-microsoft-graph-auth/harness/token.json) bytes)."
+
+      - name: Run harness tests against real Microsoft Identity
+        env:
+          MCP_GRAPH_AUTH_TOKEN_STORE: file
+        run: ./tests/run_tests.sh harness

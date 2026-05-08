@@ -1,0 +1,135 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# SPDX-FileCopyrightText: 2026 XMV Solutions GmbH
+# SPDX-FileContributor: David Koller <david.koller@xmv.de>
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-microsoft-graph-auth"
+version = "0.1.0"
+description = "Shared Microsoft Graph auth helpers (Device Code, token cache, BYO client) for MCP servers."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+authors = [
+    { name = "XMV Solutions GmbH", email = "oss@xmv.de" },
+]
+maintainers = [
+    { name = "David Koller", email = "david.koller@xmv.de" },
+]
+keywords = [
+    "mcp",
+    "microsoft-graph",
+    "oauth",
+    "device-code",
+    "model-context-protocol",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Systems Administration :: Authentication/Directory",
+]
+dependencies = [
+    "httpx>=0.28",
+    "keyring>=25",
+    "cryptography>=42",
+]
+
+[project.urls]
+Homepage = "https://github.com/XMV-Solutions-GmbH/mcp-microsoft-graph-auth"
+Repository = "https://github.com/XMV-Solutions-GmbH/mcp-microsoft-graph-auth"
+Issues = "https://github.com/XMV-Solutions-GmbH/mcp-microsoft-graph-auth/issues"
+Changelog = "https://github.com/XMV-Solutions-GmbH/mcp-microsoft-graph-auth/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "respx>=0.21",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.10",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_microsoft_graph_auth"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "N",
+    "RUF",
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["N802"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_reexport = true
+files = ["src/mcp_microsoft_graph_auth", "tests"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_decorators = false
+disallow_untyped_calls = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "unit: pure-function unit tests; all externals mocked, sub-second",
+    "integration: tests with boundary mocks (no real Microsoft Identity)",
+    "harness: tests against a real Microsoft Identity tenant; require credentials",
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/mcp_microsoft_graph_auth"]
+branch = true
+parallel = false
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+show_missing = true
+skip_covered = false
