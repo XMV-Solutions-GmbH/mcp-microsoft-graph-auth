@@ -9,10 +9,13 @@ until v0.1.0). Currently:
 - `tokens.CachedToken` — persisted-token value type.
 - `device_code.request_device_code` / `poll_for_token` /
   `refresh_access_token` — OAuth Device Code primitives.
+- `token_store.TokenStore` Protocol + three backends
+  (`KeyringTokenStore`, `PlainFileTokenStore`,
+  `EncryptedFileTokenStore`) plus the `is_real_keyring_backend`
+  helper for consumers' auto-pick logic.
 
 Pending modules (see issue tracker):
 
-- `token_store` — pluggable storage backends (#3).
 - `service_principal` — client-credentials grant (#4).
 - `login_session` — `LoginSession` + `LoginSessionRegistry` for
   MCP-tool-driven login flows (#5).
@@ -36,6 +39,14 @@ from .device_code import (
     refresh_access_token,
     request_device_code,
 )
+from .token_store import (
+    EncryptedFileTokenStore,
+    KeyringTokenStore,
+    NoUsableTokenStoreError,
+    PlainFileTokenStore,
+    TokenStore,
+    is_real_keyring_backend,
+)
 from .tokens import DEFAULT_REFRESH_BUFFER_SECONDS, CachedToken
 
 __version__ = "0.0.1.dev0"
@@ -48,8 +59,14 @@ __all__ = [
     "DeviceCodeChallenge",
     "DeviceCodeError",
     "DeviceCodeExpiredError",
+    "EncryptedFileTokenStore",
+    "KeyringTokenStore",
+    "NoUsableTokenStoreError",
+    "PlainFileTokenStore",
     "RefreshTokenInvalidError",
+    "TokenStore",
     "__version__",
+    "is_real_keyring_backend",
     "poll_for_token",
     "refresh_access_token",
     "request_device_code",
