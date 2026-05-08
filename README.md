@@ -65,6 +65,21 @@ store = PlainFileTokenStore(base_dir="~/.cache/my-mcp-server")
 store.set("default", token.to_json().encode())
 ```
 
+## UX guidance for relaying the verification URL + user code
+
+When an MCP server wraps the Device Code flow as a tool (e.g. `sp_login_begin` returns `{verification_url, user_code, ...}`), the tool's description should tell the agent **how** to render those two values to the user. Mobile / smartphone agent UIs are strict about both shape and ordering:
+
+- **`user_code` first**, alone in its own one-line code block, with no labels like `Code:` and no whitespace padding. Long-press / tap-and-hold copy then yields just the code.
+- **`verification_url` second**, on its own line as a plain Markdown auto-link, **not** inside a code block (code blocks suppress link rendering, so on mobile the user can't tap it).
+
+Why this ordering: the user's optimal workflow is *copy the code → click the link → paste the code into the page that just opened*. With the code first, the clipboard is loaded before the user leaves the chat. URL-first would force a chat-↔-browser ping-pong.
+
+Recommended verbatim phrasing for the tool's MCP description:
+
+> When surfacing the result to the user, render `user_code` FIRST in its own code block (no labels, no whitespace) and `verification_url` SECOND as a plain auto-link (not in a code block). The user copies the code first, then clicks the link, and pastes into the page that opens — minimises app-switching on mobile.
+
+The CLI fallback (`mcp-server-<svc> login`) prints `URL:` / `Code:` labels in URL-then-Code order because terminals don't have rich rendering — that format is correct for stderr and wrong to relay verbatim into chat.
+
 ## Compatibility
 
 - Python 3.11+
