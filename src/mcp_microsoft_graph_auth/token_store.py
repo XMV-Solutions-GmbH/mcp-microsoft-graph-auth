@@ -45,6 +45,10 @@ import keyring.errors
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
+from mcp_microsoft_graph_auth._filelock import (
+    exclusive_lock,
+)
+
 # Scrypt parameters chosen for ~50ms KDF on a typical laptop —
 # memory-hard enough to defeat GPU brute force on a leaked file
 # while keeping CLI startup snappy.
@@ -154,14 +158,19 @@ class PlainFileTokenStore:
 
     def set(self, profile: str, value: bytes) -> None:
         token_file = self._profile_dir(profile) / "token.json"
-        token_file.write_bytes(value)
-        token_file.chmod(0o600)
+        # Serialise concurrent writers (CLI `login` + MCP-tool
+        # `*_login_begin` against the same profile) — issue #15.
+        with exclusive_lock(token_file):
+            token_file.write_bytes(value)
+            token_file.chmod(0o600)
 
     def delete(self, profile: str) -> None:
-        try:
-            (self._profile_dir(profile) / "token.json").unlink()
-        except FileNotFoundError:
-            pass
+        token_file = self._profile_dir(profile) / "token.json"
+        with exclusive_lock(token_file):
+            try:
+                token_file.unlink()
+            except FileNotFoundError:
+                pass
 
 
 class EncryptedFileTokenStore:
@@ -214,25 +223,32 @@ class EncryptedFileTokenStore:
 
     def set(self, profile: str, value: bytes) -> None:
         d = self._profile_dir(profile)
-        salt_file = d / "token.salt"
-        if salt_file.exists():
-            salt = salt_file.read_bytes()
-        else:
-            salt = secrets.token_bytes(_SALT_BYTES)
-            salt_file.write_bytes(salt)
-            salt_file.chmod(0o600)
-        ciphertext = Fernet(self._derive_key(salt)).encrypt(value)
         token_file = d / "token.enc"
-        token_file.write_bytes(ciphertext)
-        token_file.chmod(0o600)
+        salt_file = d / "token.salt"
+        # Lock on the token-file path so concurrent .set() and
+        # .delete() against the same profile serialise. The salt
+        # file is updated inside the locked region too (single
+        # acquisition covers both writes) — issue #15.
+        with exclusive_lock(token_file):
+            if salt_file.exists():
+                salt = salt_file.read_bytes()
+            else:
+                salt = secrets.token_bytes(_SALT_BYTES)
+                salt_file.write_bytes(salt)
+                salt_file.chmod(0o600)
+            ciphertext = Fernet(self._derive_key(salt)).encrypt(value)
+            token_file.write_bytes(ciphertext)
+            token_file.chmod(0o600)
 
     def delete(self, profile: str) -> None:
         d = self._profile_dir(profile)
-        for name in ("token.enc", "token.salt"):
-            try:
-                (d / name).unlink()
-            except FileNotFoundError:
-                pass
+        token_file = d / "token.enc"
+        with exclusive_lock(token_file):
+            for name in ("token.enc", "token.salt"):
+                try:
+                    (d / name).unlink()
+                except FileNotFoundError:
+                    pass
 
 
 def is_real_keyring_backend(backend: keyring.backend.KeyringBackend) -> bool:

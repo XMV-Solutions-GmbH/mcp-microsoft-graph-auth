@@ -28,6 +28,7 @@ primitives.
 
 from __future__ import annotations
 
+from ._filelock import TokenStoreLockTimeoutError
 from .device_code import (
     AUTHORITY_BASE,
     AuthorizationDeniedError,
@@ -60,7 +61,7 @@ from .token_store import (
 )
 from .tokens import DEFAULT_REFRESH_BUFFER_SECONDS, CachedToken
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "AUTHORITY_BASE",
@@ -81,6 +82,7 @@ __all__ = [
     "PlainFileTokenStore",
     "RefreshTokenInvalidError",
     "TokenStore",
+    "TokenStoreLockTimeoutError",
     "__version__",
     "acquire_app_only_token",
     "is_real_keyring_backend",

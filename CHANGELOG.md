@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No entries.
 
+## [v0.1.2] — 2026-05-12
+
+Bug-fix release. No new features, no breaking changes — purely additive.
+
+### Fixed
+
+- **`PlainFileTokenStore.set` / `.delete` and `EncryptedFileTokenStore.set` / `.delete` now acquire an exclusive file lock** around the write. Closes [#15](https://github.com/XMV-Solutions-GmbH/mcp-microsoft-graph-auth/issues/15). Without the lock, two concurrent writers against the same profile (typically: a CLI `*-login` invocation racing an MCP-tool `*_login_begin`) had a "last writer wins" outcome where the loser didn't learn its write was discarded. On Windows / certain filesystems the situation was worse — `os.replace` isn't atomic everywhere, so a partial-write could in principle land. The lock blocks for up to 10s by default and raises `TokenStoreLockTimeoutError` on timeout rather than hanging indefinitely. `KeyringTokenStore` is unchanged — keyring backends serialise writes themselves; the read path on all backends stays lockless.
+
+### Added (additive, no breaking changes)
+
+- **`mcp_microsoft_graph_auth.TokenStoreLockTimeoutError`** — new exception class re-exported from the package root. Carries `lock_path` and `timeout` attributes so downstream MCPs can surface the timeout as a structured error to their agent (e.g. `{error: {code: "concurrent_login_attempt"}}`).
+- **`mcp_microsoft_graph_auth._filelock.exclusive_lock(target, *, timeout=10.0)`** — context-manager primitive that backs the TokenStore lock. POSIX uses `fcntl.flock` on a sidecar `<target>.lock` file; Windows uses `msvcrt.locking`. Pure stdlib (no third-party `filelock` dep). Underscore-prefixed module — public API for consumers is exclusively `TokenStoreLockTimeoutError`.
+
+### Engineering
+
+- 99 unit tests (was 88; +11). New `tests/unit/test_filelock.py` covers: clean acquire / release, sequential re-acquisition, two-thread serialisation (real time, no mock), subprocess timeout test (real `multiprocessing.Process` holding the lock while the main process tries to acquire with short timeout), `PlainFileTokenStore` and `EncryptedFileTokenStore` `.set`/`.delete` lock-file existence, `.get` lockless invariant, concurrent-writer payload integrity (no half-written JSON).
+
 ## [v0.1.1] — 2026-05-08
 
 ### Fixed
