@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+#
+# Weekly dependency-bump PRs from Dependabot. Shape mirrors the sister
+# repos (sharepoint-mcp / outlook-mcp / microsoft-tasks-mcp) so the
+# four-MCP-server fleet has consistent security-patch latency.
+#
+# - github-actions: catches CVEs / version bumps in the workflow
+#   actions (actions/checkout, actions/setup-python, etc.).
+# - pip: catches CVEs in the Python deps declared in pyproject.toml
+#   (httpx, mcp, keyring, …). Dependabot reads pyproject.toml directly;
+#   the uv-managed uv.lock isn't a Dependabot-supported format, but
+#   Dependabot still resolves through pyproject's version constraints.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
