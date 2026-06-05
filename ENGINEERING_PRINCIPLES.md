@@ -1,5 +1,5 @@
 <!--
-SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-License-Identifier: LicenseRef-XMV-Proprietary
 SPDX-FileCopyrightText: 2026 XMV Solutions GmbH
 SPDX-FileContributor: David Koller <david.koller@xmv.de>
 -->
@@ -359,7 +359,7 @@ Every XMV proprietary project has:
 Every source file authored in the project carries an **SPDX-style header** at the very top (after a shebang line if any):
 
 ```text
-SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-License-Identifier: LicenseRef-XMV-Proprietary
 SPDX-FileCopyrightText: <year> XMV Solutions GmbH
 SPDX-FileContributor: <name> <<email>>
 ```
